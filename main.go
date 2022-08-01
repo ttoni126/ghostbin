@@ -643,7 +643,7 @@ func refreshBannedWords() {
 	}
 
 	newWords := strings.Split(strings.TrimSpace(string(data)), ",")
-	bannedWords = newWords
+	bannedWords = &newWords
 
 	glog.Info("Loaded ", len(bannedWords), " banned words: ", bannedWords)
 }
@@ -658,7 +658,7 @@ var userStore account.AccountStore
 var pasteRouter *mux.Router
 var router *mux.Router
 var healthServer *HealthServer
-var bannedWords = []string{}
+var bannedWords = &[]string{}
 
 type args struct {
 	root, addr string
