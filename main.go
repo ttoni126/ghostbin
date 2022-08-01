@@ -632,23 +632,21 @@ func pasteDestroyCallback(p *Paste) {
 func refreshBannedWords() {
 	if _, err := os.Stat("bannedWords.txt"); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
+			glog
 			return
 		}
 		panic(err)
 	}
-
-	bannedLock.Lock()
-	defer bannedLock.Unlock()
 
 	data, err := ioutil.ReadFile("bannedWords.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	newWords := strings.Split(string(data), ",")
+	newWords := strings.Split(strings.TrimSpace(string(data)), ",")
 	bannedWords = newWords
 
-	glog.Info("Loaded banned words: ", bannedWords)
+	glog.Info("Loaded ", len(bannedWords), " banned words: ", bannedWords)
 }
 
 var pasteStore *FilesystemPasteStore
@@ -662,7 +660,6 @@ var pasteRouter *mux.Router
 var router *mux.Router
 var healthServer *HealthServer
 var bannedWords = []string{}
-var bannedLock = &sync.RWMutex{}
 
 type args struct {
 	root, addr string
