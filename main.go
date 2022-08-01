@@ -632,7 +632,6 @@ func pasteDestroyCallback(p *Paste) {
 func refreshBannedWords() {
 	if _, err := os.Stat("bannedWords.txt"); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			glog
 			return
 		}
 		panic(err)
