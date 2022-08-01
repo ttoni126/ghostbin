@@ -232,6 +232,13 @@ func pasteUpdateCore(o Model, w http.ResponseWriter, r *http.Request, newPaste b
 		w.WriteHeader(http.StatusFound)
 		return
 	}
+	
+	for _, w := range bannedWords {
+		if strings.Contains(body, w) {
+			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
+			return
+		}
+	}
 
 	pasteLen := ByteSize(len(body))
 	if pasteLen > PASTE_MAXIMUM_LENGTH {
@@ -287,6 +294,13 @@ func pasteCreate(w http.ResponseWriter, r *http.Request) {
 		// 400 here, 200 above (one is displayed to the user, one could be an API response.)
 		RenderError(fmt.Errorf("Hey, put some text in that paste."), 400, w)
 		return
+	}
+
+	for _, w := range bannedWords {
+		if strings.Contains(body, w) {
+			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
+			return
+		}
 	}
 
 	pasteLen := ByteSize(len(body))
@@ -614,6 +628,28 @@ func pasteDestroyCallback(p *Paste) {
 	healthServer.IncrementMetric("paste.deleted")
 }
 
+func refreshBannedWords() {
+	if _, err := os.Stat("bannedWords.txt"); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return
+		}
+		panic(err)
+	}
+
+	bannedLock.Lock()
+	defer bannedLock.Unlock()
+
+	data, err := ioutil.ReadFile("bannedWords.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	newWords := strings.Split(string(data), ",")
+	bannedWords = &newWords
+
+	glog.Info("Loaded banned words: ", bannedWords)
+}
+
 var pasteStore *FilesystemPasteStore
 var pasteExpirator *gotimeout.Expirator
 var sessionStore *sessions.FilesystemStore
@@ -624,6 +660,8 @@ var userStore account.AccountStore
 var pasteRouter *mux.Router
 var router *mux.Router
 var healthServer *HealthServer
+var bannedWords = *[]string{}
+var bannedLock = *sync.RWMutex{}
 
 type args struct {
 	root, addr string
@@ -774,6 +812,16 @@ func main() {
 			}
 		}
 	}()
+
+	go func() {
+		t := time.NewTicker(time.Minute)
+		for {
+			select {
+			case <- t.C:
+				refreshBannedWords()
+			}
+		}
+	}
 
 	launchTime := time.Now()
 	healthServer = &HealthServer{}
