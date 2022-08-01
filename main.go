@@ -234,7 +234,7 @@ func pasteUpdateCore(o Model, w http.ResponseWriter, r *http.Request, newPaste b
 		return
 	}
 
-	for _, bw := range bannedWords {
+	for _, bw := range *bannedWords {
 		if strings.Contains(body, bw) {
 			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
 			return
@@ -297,7 +297,7 @@ func pasteCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, bw := range bannedWords {
+	for _, bw := range *bannedWords {
 		if strings.Contains(body, bw) {
 			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
 			return
@@ -645,7 +645,7 @@ func refreshBannedWords() {
 	newWords := strings.Split(strings.TrimSpace(string(data)), ",")
 	bannedWords = &newWords
 
-	glog.Info("Loaded ", len(bannedWords), " banned words: ", bannedWords)
+	glog.Info("Loaded ", len(*bannedWords), " banned words: ", bannedWords)
 }
 
 var pasteStore *FilesystemPasteStore
