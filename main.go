@@ -18,6 +18,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"errors"
 
 	"github.com/DHowett/ghostbin/account"
 	"github.com/DHowett/gotimeout"
@@ -232,7 +233,7 @@ func pasteUpdateCore(o Model, w http.ResponseWriter, r *http.Request, newPaste b
 		w.WriteHeader(http.StatusFound)
 		return
 	}
-	
+
 	for _, w := range bannedWords {
 		if strings.Contains(body, w) {
 			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
@@ -645,7 +646,7 @@ func refreshBannedWords() {
 	}
 
 	newWords := strings.Split(string(data), ",")
-	bannedWords = &newWords
+	bannedWords = newWords
 
 	glog.Info("Loaded banned words: ", bannedWords)
 }
@@ -660,7 +661,7 @@ var userStore account.AccountStore
 var pasteRouter *mux.Router
 var router *mux.Router
 var healthServer *HealthServer
-var bannedWords = *[]string{}
+var bannedWords = []string{}
 var bannedLock = *sync.RWMutex{}
 
 type args struct {
