@@ -234,8 +234,8 @@ func pasteUpdateCore(o Model, w http.ResponseWriter, r *http.Request, newPaste b
 		return
 	}
 
-	for _, w := range bannedWords {
-		if strings.Contains(body, w) {
+	for _, bw := range bannedWords {
+		if strings.Contains(body, bw) {
 			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
 			return
 		}
@@ -297,8 +297,8 @@ func pasteCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, w := range bannedWords {
-		if strings.Contains(body, w) {
+	for _, bw := range bannedWords {
+		if strings.Contains(body, bw) {
 			RenderError(fmt.Errorf("A banned word has been found in that paste."), 400, w)
 			return
 		}
@@ -662,7 +662,7 @@ var pasteRouter *mux.Router
 var router *mux.Router
 var healthServer *HealthServer
 var bannedWords = []string{}
-var bannedLock = *sync.RWMutex{}
+var bannedLock = &sync.RWMutex{}
 
 type args struct {
 	root, addr string
