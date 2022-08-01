@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -18,7 +19,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"errors"
 
 	"github.com/DHowett/ghostbin/account"
 	"github.com/DHowett/gotimeout"
@@ -818,11 +818,11 @@ func main() {
 		t := time.NewTicker(time.Minute)
 		for {
 			select {
-			case <- t.C:
+			case <-t.C:
 				refreshBannedWords()
 			}
 		}
-	}
+	}()
 
 	launchTime := time.Now()
 	healthServer = &HealthServer{}
